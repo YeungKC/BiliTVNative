@@ -137,6 +137,8 @@
 | P4-31 | 缓存清理操作 | Done | 设置页新增清理缓存操作，当前归入 `系统设置`，并在行内显示当前磁盘/临时缓存大小。当前缓存策略为 Coil 内存缓存占可用内存 20%，图片磁盘缓存位于 `cacheDir/image_cache` 且上限 128MB；OkHttp 不使用磁盘缓存，推荐/播放器侧缓存仅在内存中。清理缓存会删除 Coil 图片缓存和 app cache 临时文件，同时保留登录、设置、搜索历史、WBI key 和播放进度；`assembleDebug` 通过 |
 | P4-32 | 繁体中文语言支持 | Done | 新增 OpenCC4J 和简体/香港繁体/台湾繁体语言设置循环。静态字符串已有 `values-zh-rHK` 和 `values-zh-rTW`；动态标题、角标、弹幕文本、UP 主名称、分集标题、播放器侧边面板、账号名称和完成提示目标名称在显示时转换，请求和缓存 key 保留原文；`assembleDebug` 通过，并已在 `192.168.1.131:5555` 安装/启动 |
 
+| P4-33 | 播放备用 CDN 自动回退 | Done | `PlaybackTrack` 将 Bilibili 返回的 `base_url`/`backup_url` 去重后最多注入 8 个 DASH `BaseURL`，使用 DVB profile 和递增 `dvb:priority` 保证主 URL 优先、备用 URL 可作为独立 location，交由 Media3 默认 location fallback 在 503 等加载错误时切换；新增 URL 归并 JVM 单测和电视端 503→备用 URL instrumentation test；`testDebugUnitTest`、`connectedDebugAndroidTest`、`assembleRelease -PtargetAbi=armeabi-v7a` 通过，release APK 已安装并启动于 Android TV（versionName 1.0.1） |
+
 ## P5 弹幕与空降助手
 
 | ID | 任务 | 状态 | 验收/备注 |
