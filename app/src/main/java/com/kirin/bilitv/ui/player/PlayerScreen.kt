@@ -97,6 +97,7 @@ import com.kirin.bilitv.core.player.DanmakuEntry
 import com.kirin.bilitv.core.player.DanmakuSettings
 import com.kirin.bilitv.core.player.DanmakuSettingsStore
 import com.kirin.bilitv.core.player.PlaybackInfo
+import com.kirin.bilitv.core.player.manifestBaseUrls
 import com.kirin.bilitv.core.player.PlaybackCodecPreference
 import com.kirin.bilitv.core.player.PlaybackQualityPreference
 import com.kirin.bilitv.core.player.PlaybackRepository
@@ -1811,7 +1812,7 @@ private fun buildDashManifest(info: PlaybackInfo): String {
   }
   val durationSeconds = (info.durationMs / 1000L).coerceAtLeast(1L)
   return """
-    <MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" mediaPresentationDuration="PT${durationSeconds}S" minBufferTime="PT1.5S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011">
+    <MPD xmlns="urn:mpeg:dash:schema:mpd:2011" xmlns:dvb="urn:dvb:dash:dash-extensions:2014-1" type="static" mediaPresentationDuration="PT${durationSeconds}S" minBufferTime="PT1.5S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011,urn:dvb:dash:profile:dvb-dash:2014">
       <Period duration="PT${durationSeconds}S">
         <AdaptationSet id="0" contentType="video" mimeType="${info.videoTracks.firstOrNull()?.mimeType.orEmpty().ifBlank { "video/mp4" }}" segmentAlignment="true">
           $videoRepresentations
@@ -1827,7 +1828,12 @@ private fun buildDashManifest(info: PlaybackInfo): String {
 }
 
 private fun PlaybackTrack.toRepresentation(adaptationSetId: String, contentType: String): String {
-  val escapedUrl = baseUrl.escapeXml()
+  // Bilibili already returns signed backup URLs; let Media3 fail over on load errors.
+  val baseUrls = manifestBaseUrls()
+  // Distinct DVB priorities keep the primary URL first and each backup eligible.
+  val baseUrlElements = baseUrls.mapIndexed { index, url ->
+    """      <BaseURL dvb:priority="${index + 1}" dvb:weight="1" serviceLocation="bili-$index">${url.escapeXml()}</BaseURL>"""
+  }.joinToString(separator = "\n")
   val dimensions = if (contentType == "video") {
     """ width="$width" height="$height""""
   } else {
@@ -1835,7 +1841,7 @@ private fun PlaybackTrack.toRepresentation(adaptationSetId: String, contentType:
   }
   return """
     <Representation id="${adaptationSetId}_$id" bandwidth="$bandwidth" codecs="${codecs.escapeXml()}"$dimensions>
-      <BaseURL>$escapedUrl</BaseURL>
+      $baseUrlElements
       <SegmentBase indexRange="${segmentBase.indexRange.escapeXml()}">
         <Initialization range="${segmentBase.initializationRange.escapeXml()}" />
       </SegmentBase>

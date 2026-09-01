@@ -77,6 +77,13 @@ data class PlaybackTrack(
     get() = codecs.contains("av01", ignoreCase = true)
 }
 
+// ponytail: cap the signed URL list at eight; add probing only if TV measurements justify it.
+internal fun PlaybackTrack.manifestBaseUrls(): List<String> =
+  (listOf(baseUrl) + backupUrls)
+    .filter(String::isNotBlank)
+    .distinct()
+    .take(8)
+
 data class PlaybackSegmentBase(
   val initializationRange: String,
   val indexRange: String,
