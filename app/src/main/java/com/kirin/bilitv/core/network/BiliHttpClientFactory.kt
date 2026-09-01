@@ -13,7 +13,7 @@ class BiliHttpClientFactory {
         val omitReferer = request.header(BiliHeaders.OmitRefererHeader) == BiliHeaders.OmitRefererValue
         val builder = request.newBuilder()
           .removeHeader(BiliHeaders.OmitRefererHeader)
-          .header("User-Agent", request.header("User-Agent") ?: BiliHeaders.UserAgent)
+          .header("User-Agent", request.header("User-Agent") ?: BiliHeaders.ApiUserAgent)
         if (omitReferer) {
           builder.removeHeader("Referer")
         } else {

@@ -1,6 +1,6 @@
 # BiliTVNative 开发进度
 
-最后更新：2026-07-13
+最后更新：2026-09-01
 
 ## 更新规则
 
@@ -239,6 +239,7 @@
 | P8-11 | UP 主更多视频间歇加载失败诊断 | Done | 在 `PlayerScreen` 和 `VideoRepository` 增加脱敏日志，记录打开 UP 主面板、mid 解析、缓存命中、space 接口签名/刷新/回退、空 vlist、网络失败和过期 token 丢弃；不打印 Cookie/token；`assembleRelease -PtargetAbi=armeabi-v7a` 通过 |
 | P8-13 | UP 主更多视频 412 加载体验优化 | Done | 将空间投稿加载拆成 `Interactive` 和 `Recovery` 两种重试模式：前台面板只做一次 600ms 短重试，失败后立即结束 loading 并保留缓存/空态；后台 1.2s 后再做恢复重试，成功且仍停留在同一 UP 面板时再刷新列表，避免 412 退避把侧栏卡住数秒；`assembleRelease -PtargetAbi=armeabi-v7a` 通过，已安装并启动 `192.168.1.131:5555` |
 | P8-14 | UP 投稿接口对齐网页抓包 | Done | 根据网页端 `x/space/wbi/arc/search` 抓包同步最新发布/最多播放请求：参数改为 `ps=25,index=1,order_avoided=true,platform=web,web_location=333.1387`，请求头使用 `space.bilibili.com/{mid}` Referer/Origin、Chrome 147 UA、sec-ch-ua/priority/fetch 头，并在 Cookie 中补充登录 mid 对应的 `DedeUserID`；`assembleRelease -PtargetAbi=armeabi-v7a` 通过，已安装并启动 `192.168.1.131:5555` |
+| P8-15 | Bilibili API 412 请求头修正 | Done | 现场 412 诊断确认伪装 Chrome UA 会触发 Bilibili API 412；通用 API 和 playurl 请求改用 `BiliTVNative/1.0.1`，Media3 媒体分片请求保留媒体 UA；Space 投稿继续作为独立网页请求保留 Chrome UA/sec-ch 头，并由 `SpaceVideoHeadersTest` 锁定不被 API UA 覆盖；新增 API/媒体 UA 分离 JVM 单测；`testDebugUnitTest`、`assembleRelease -PtargetAbi=armeabi-v7a` 通过，release APK 已安装并在 Android TV 实机播放验证，日志返回 H.265/H.264 播放轨道且无 412 |
 
 ## P9 重构拆分收尾
 
