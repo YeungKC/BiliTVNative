@@ -79,14 +79,14 @@
 | --- | --- | --- | --- |
 | P2-00 | 独立登录入口到侧边栏顶部 | Done | 未登录显示账号图标，设置页账号卡片已移除 |
 | P2-00A | 建立用户登录态结构 | Done | `UserSession` 支持 `sessData`、`biliJct`、`mid`、`face`、`uname`、`isVip` |
-| P2-00B | 侧边栏头像和大会员角标结构 | Done | 登录后显示头像，大会员显示右下角“大”；登录后头像只展示不参与焦点 |
+| P2-00B | 侧边栏头像和大会员角标结构 | Done | 登录后显示头像，大会员显示右下角“大”；登录后头像继续作为可聚焦的账号入口 |
 | P2-01 | 实现 TV 二维码生成 | Done | 使用 TV 登录接口生成 `auth_code`，ZXing 本地渲染二维码，`assembleDebug` 通过 |
 | P2-02 | 实现二维码状态轮询 | Done | 每 2 秒轮询，使用 `repeatOnLifecycle(RESUMED)` 暂停后台轮询 |
 | P2-03 | 处理二维码过期和刷新 | Done | 过期/失败显示刷新二维码按钮 |
 | P2-04 | 登录成功保存 Cookie | Done | 从 `cookie_info.cookies` 保存 `SESSDATA`、`bili_jct` |
 | P2-05 | 登录成功拉取用户信息 | Done | 调用 `/x/web-interface/nav` 保存头像、昵称、UID、VIP 状态；已补完整 Cookie 和登录后资料补刷 |
 | P2-06 | 登录成功刷新侧边栏头像 | Done | `SessionStore.session` 驱动 Compose 自动刷新；Shell 全局补刷用户资料，头像使用限定尺寸请求、HTTPS 规范化和 B 站图片请求头 |
-| P2-07 | 账号页显示登录态 | Done | 退出登录入口暂时移除，后续整体完成后再决定位置；`assembleDebug` 通过 |
+| P2-07 | 账号页显示登录态 | Done | 登录账号页显示资料卡和 `退出登录` 操作；点击调用 `AuthRepository.clearSession()` 清除认证 Cookie、设备 Cookie 和资料，`SessionStore.session` 驱动页面回到二维码登录；资料卡高度调整为可容纳退出操作，并复用 `LocalHomeColors`、`biliLiquidGlassSurface` 和现有面板边框/性能开关，正文与头像 fallback 跟随主题；`AccountScreenTest.logoutClearsSession` 使用测试 APK 的 device-protected Context 隔离存储，并验证退出文字节点可见；Android TV 实机登录态 UI tree 和画面均确认资料卡及 `退出登录` 可见，`testDebugUnitTest`、`assembleRelease -PtargetAbi=armeabi-v7a` 通过 |
 
 ## P3 登录态页面
 

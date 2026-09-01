@@ -39,6 +39,7 @@ import com.kirin.bilitv.ui.theme.BiliRadius
 import com.kirin.bilitv.ui.theme.BiliSizing
 import com.kirin.bilitv.ui.theme.BiliSpacing
 import com.kirin.bilitv.ui.theme.BiliTypography
+import com.kirin.bilitv.ui.theme.LocalHomeColors
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -58,6 +59,7 @@ fun AccountScreen(
     }
     LoggedInAccount(
       userSession = userSession,
+      authRepository = authRepository,
     )
   } else {
     TvQrLoginPanel(authRepository = authRepository)
@@ -67,7 +69,10 @@ fun AccountScreen(
 @Composable
 private fun LoggedInAccount(
   userSession: UserSession,
+  authRepository: AuthRepository,
 ) {
+  val coroutineScope = rememberCoroutineScope()
+  val homeColors = LocalHomeColors.current
   Column(
     modifier = Modifier.fillMaxSize(),
     verticalArrangement = Arrangement.Center,
@@ -77,6 +82,25 @@ private fun LoggedInAccount(
       userSession = userSession,
       modifier = Modifier
         .size(width = BiliSizing.AccountProfilePanelWidth, height = BiliSizing.AccountProfilePanelHeight),
+      action = {
+        BiliFocusableSurface(
+          scaleOnFocus = false,
+          shape = RoundedCornerShape(BiliRadius.Pill),
+          onClick = {
+            coroutineScope.launch {
+              authRepository.clearSession()
+            }
+          },
+        ) {
+          Text(
+            text = stringResource(R.string.account_logout),
+            color = homeColors.textPrimary,
+            fontSize = BiliTypography.Body,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = BiliSpacing.Xl, vertical = BiliSpacing.Md),
+          )
+        }
+      },
     )
   }
 }

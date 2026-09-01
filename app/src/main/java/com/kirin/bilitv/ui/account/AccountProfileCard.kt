@@ -32,13 +32,16 @@ import com.kirin.bilitv.R
 import com.kirin.bilitv.core.image.BiliImageSizing
 import com.kirin.bilitv.core.image.buildOwnerAvatarRequest
 import com.kirin.bilitv.core.storage.UserSession
+import com.kirin.bilitv.ui.glass.biliLiquidGlassSurface
 import com.kirin.bilitv.ui.i18n.convertChineseText
 import com.kirin.bilitv.ui.settings.LocalBiliPerformancePolicy
 import com.kirin.bilitv.ui.theme.BiliColors
+import com.kirin.bilitv.ui.theme.BiliFocus
 import com.kirin.bilitv.ui.theme.BiliRadius
 import com.kirin.bilitv.ui.theme.BiliSizing
 import com.kirin.bilitv.ui.theme.BiliSpacing
 import com.kirin.bilitv.ui.theme.BiliTypography
+import com.kirin.bilitv.ui.theme.LocalHomeColors
 
 @Composable
 fun AccountProfileCard(
@@ -46,9 +49,18 @@ fun AccountProfileCard(
   modifier: Modifier = Modifier,
   action: (@Composable () -> Unit)? = null,
 ) {
+  val homeColors = LocalHomeColors.current
+  val performancePolicy = LocalBiliPerformancePolicy.current
   Column(
     modifier = modifier
-      .background(BiliColors.SurfaceElevated, RoundedCornerShape(BiliRadius.Panel))
+      .biliLiquidGlassSurface(
+        enabled = performancePolicy.cinematicVisualEffectsEnabled &&
+          performancePolicy.liquidGlassCardsEnabled,
+        shape = RoundedCornerShape(BiliRadius.Panel),
+        surfaceColor = homeColors.cardSurface,
+        borderColor = homeColors.glassBorder,
+        borderWidth = BiliFocus.RestingBorderWidth,
+      )
       .padding(BiliSpacing.Xl),
     verticalArrangement = Arrangement.spacedBy(BiliSpacing.Lg),
   ) {
@@ -66,7 +78,7 @@ fun AccountProfileCard(
           text = userSession.uname?.let { name -> convertChineseText(name) }
             ?: userSession.mid?.let { stringResource(R.string.account_logged_in_default) }
             ?: stringResource(R.string.account_profile_fallback),
-          color = BiliColors.TextPrimary,
+          color = homeColors.textPrimary,
           fontSize = BiliTypography.ScreenTitle,
           fontWeight = FontWeight.Bold,
           maxLines = 1,
@@ -74,7 +86,7 @@ fun AccountProfileCard(
         )
         Text(
           text = stringResource(R.string.account_uid, userSession.mid?.toString().orEmpty()),
-          color = BiliColors.TextSecondary,
+          color = homeColors.textSecondary,
           fontSize = BiliTypography.Body,
           maxLines = 1,
           overflow = TextOverflow.Ellipsis,
@@ -85,7 +97,7 @@ fun AccountProfileCard(
           } else {
             stringResource(R.string.account_normal_status)
           },
-          color = if (userSession.isVip) BiliColors.BiliPink else BiliColors.TextTertiary,
+          color = if (userSession.isVip) BiliColors.BiliPink else homeColors.textTertiary,
           fontSize = BiliTypography.BodySmall,
           fontWeight = FontWeight.Medium,
           maxLines = 1,
@@ -108,12 +120,13 @@ fun AccountProfileCard(
 private fun ProfileAvatar(userSession: UserSession) {
   val context = LocalContext.current
   val performancePolicy = LocalBiliPerformancePolicy.current
+  val homeColors = LocalHomeColors.current
   val profileAvatarRequestSizePx = if (performancePolicy.lowSpecMode) {
     BiliImageSizing.AccountAvatarSizePx
   } else {
     BiliImageSizing.AccountProfileAvatarSizePx
   }
-  val fallbackPainter = ColorPainter(BiliColors.Surface)
+  val fallbackPainter = ColorPainter(homeColors.cardSurface)
   val face = userSession.face.orEmpty()
 
   Box(
@@ -145,20 +158,20 @@ private fun ProfileAvatar(userSession: UserSession) {
         modifier = Modifier
           .size(BiliSizing.AccountProfileAvatarSize)
           .clip(CircleShape)
-          .background(BiliColors.Surface),
+          .background(homeColors.cardSurface),
       )
     } else {
       Box(
         modifier = Modifier
           .size(BiliSizing.AccountProfileAvatarSize)
           .clip(CircleShape)
-          .background(BiliColors.Surface),
+          .background(homeColors.cardSurface),
         contentAlignment = Alignment.Center,
       ) {
         Image(
           painter = painterResource(R.drawable.ic_nav_account),
           contentDescription = stringResource(R.string.nav_login),
-          colorFilter = ColorFilter.tint(BiliColors.BiliPink),
+          colorFilter = ColorFilter.tint(homeColors.accent),
           modifier = Modifier.size(BiliSizing.AccountAvatarSize),
         )
       }
@@ -176,7 +189,7 @@ private fun ProfileAvatar(userSession: UserSession) {
       ) {
         Text(
           text = stringResource(R.string.account_vip_badge),
-          color = BiliColors.TextPrimary,
+          color = homeColors.textPrimary,
           fontSize = BiliTypography.AccountProfileVipBadge,
           lineHeight = BiliTypography.AccountProfileVipBadgeLineHeight,
           fontWeight = FontWeight.Bold,
