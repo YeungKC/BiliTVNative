@@ -1,6 +1,6 @@
 # BiliTVNative 开发进度
 
-最后更新：2026-07-13
+最后更新：2026-09-01
 
 ## 更新规则
 
@@ -79,14 +79,14 @@
 | --- | --- | --- | --- |
 | P2-00 | 独立登录入口到侧边栏顶部 | Done | 未登录显示账号图标，设置页账号卡片已移除 |
 | P2-00A | 建立用户登录态结构 | Done | `UserSession` 支持 `sessData`、`biliJct`、`mid`、`face`、`uname`、`isVip` |
-| P2-00B | 侧边栏头像和大会员角标结构 | Done | 登录后显示头像，大会员显示右下角“大”；登录后头像只展示不参与焦点 |
+| P2-00B | 侧边栏头像和大会员角标结构 | Done | 登录后显示头像，大会员显示右下角“大”；登录后头像继续作为可聚焦的账号入口 |
 | P2-01 | 实现 TV 二维码生成 | Done | 使用 TV 登录接口生成 `auth_code`，ZXing 本地渲染二维码，`assembleDebug` 通过 |
 | P2-02 | 实现二维码状态轮询 | Done | 每 2 秒轮询，使用 `repeatOnLifecycle(RESUMED)` 暂停后台轮询 |
 | P2-03 | 处理二维码过期和刷新 | Done | 过期/失败显示刷新二维码按钮 |
 | P2-04 | 登录成功保存 Cookie | Done | 从 `cookie_info.cookies` 保存 `SESSDATA`、`bili_jct` |
 | P2-05 | 登录成功拉取用户信息 | Done | 调用 `/x/web-interface/nav` 保存头像、昵称、UID、VIP 状态；已补完整 Cookie 和登录后资料补刷 |
 | P2-06 | 登录成功刷新侧边栏头像 | Done | `SessionStore.session` 驱动 Compose 自动刷新；Shell 全局补刷用户资料，头像使用限定尺寸请求、HTTPS 规范化和 B 站图片请求头 |
-| P2-07 | 账号页显示登录态 | Done | 退出登录入口暂时移除，后续整体完成后再决定位置；`assembleDebug` 通过 |
+| P2-07 | 账号页显示登录态 | Done | 登录账号页显示资料卡和 `退出登录` 操作；点击调用 `AuthRepository.clearSession()` 清除认证 Cookie、设备 Cookie 和资料，`SessionStore.session` 驱动页面回到二维码登录；资料卡高度调整为可容纳退出操作，并复用 `LocalHomeColors`、`biliLiquidGlassSurface` 和现有面板边框/性能开关，正文与头像 fallback 跟随主题；`AccountScreenTest.logoutClearsSession` 使用测试 APK 的 device-protected Context 隔离存储，并验证退出文字节点可见；Android TV 实机登录态 UI tree 和画面均确认资料卡及 `退出登录` 可见，`testDebugUnitTest`、`assembleRelease -PtargetAbi=armeabi-v7a` 通过 |
 
 ## P3 登录态页面
 
@@ -136,6 +136,7 @@
 | P4-30 | 播放完成动作 | Done | 设置页新增默认关闭的完成后自动播下一集、自动播相关推荐和自动退出播放。播放完成时会上报进度，显示可取消 toast 并标出下一个目标，然后执行已启用动作中优先级最高的一项；自动退出复用手动退出播放器路径，确保焦点回到原视频；AirJump 直接跳到结尾附近时会抑制已跳过 toast，避免与完成提示冲突；`assembleDebug` 通过 |
 | P4-31 | 缓存清理操作 | Done | 设置页新增清理缓存操作，当前归入 `系统设置`，并在行内显示当前磁盘/临时缓存大小。当前缓存策略为 Coil 内存缓存占可用内存 20%，图片磁盘缓存位于 `cacheDir/image_cache` 且上限 128MB；OkHttp 不使用磁盘缓存，推荐/播放器侧缓存仅在内存中。清理缓存会删除 Coil 图片缓存和 app cache 临时文件，同时保留登录、设置、搜索历史、WBI key 和播放进度；`assembleDebug` 通过 |
 | P4-32 | 繁体中文语言支持 | Done | 新增 OpenCC4J 和简体/香港繁体/台湾繁体语言设置循环。静态字符串已有 `values-zh-rHK` 和 `values-zh-rTW`；动态标题、角标、弹幕文本、UP 主名称、分集标题、播放器侧边面板、账号名称和完成提示目标名称在显示时转换，请求和缓存 key 保留原文；`assembleDebug` 通过，并已在 `192.168.1.131:5555` 安装/启动 |
+| P4-33 | 播放备用 CDN 自动回退 | Done | `PlaybackTrack` 将 Bilibili 返回的 `base_url`/`backup_url` 去重后最多注入 8 个 DASH `BaseURL`，使用 DVB profile 和递增 `dvb:priority` 保证主 URL 优先、备用 URL 可作为独立 location，交由 Media3 默认 location fallback 在 503 等加载错误时切换；新增 URL 归并 JVM 单测和电视端 503→备用 URL instrumentation test；`testDebugUnitTest`、`connectedDebugAndroidTest`、`assembleRelease -PtargetAbi=armeabi-v7a` 通过，release APK 已安装并启动于 Android TV（versionName 1.0.1） |
 
 ## P5 弹幕与空降助手
 
@@ -237,6 +238,7 @@
 | P8-11 | UP 主更多视频间歇加载失败诊断 | Done | 在 `PlayerScreen` 和 `VideoRepository` 增加脱敏日志，记录打开 UP 主面板、mid 解析、缓存命中、space 接口签名/刷新/回退、空 vlist、网络失败和过期 token 丢弃；不打印 Cookie/token；`assembleRelease -PtargetAbi=armeabi-v7a` 通过 |
 | P8-13 | UP 主更多视频 412 加载体验优化 | Done | 将空间投稿加载拆成 `Interactive` 和 `Recovery` 两种重试模式：前台面板只做一次 600ms 短重试，失败后立即结束 loading 并保留缓存/空态；后台 1.2s 后再做恢复重试，成功且仍停留在同一 UP 面板时再刷新列表，避免 412 退避把侧栏卡住数秒；`assembleRelease -PtargetAbi=armeabi-v7a` 通过，已安装并启动 `192.168.1.131:5555` |
 | P8-14 | UP 投稿接口对齐网页抓包 | Done | 根据网页端 `x/space/wbi/arc/search` 抓包同步最新发布/最多播放请求：参数改为 `ps=25,index=1,order_avoided=true,platform=web,web_location=333.1387`，请求头使用 `space.bilibili.com/{mid}` Referer/Origin、Chrome 147 UA、sec-ch-ua/priority/fetch 头，并在 Cookie 中补充登录 mid 对应的 `DedeUserID`；`assembleRelease -PtargetAbi=armeabi-v7a` 通过，已安装并启动 `192.168.1.131:5555` |
+| P8-15 | Bilibili API 412 请求头修正 | Done | 现场 412 诊断确认伪装 Chrome UA 会触发 Bilibili API 412；通用 API 和 playurl 请求改用 `BiliTVNative/1.0.1`，Media3 媒体分片请求保留媒体 UA；Space 投稿继续作为独立网页请求保留 Chrome UA/sec-ch 头，并由 `SpaceVideoHeadersTest` 锁定不被 API UA 覆盖；新增 API/媒体 UA 分离 JVM 单测；`testDebugUnitTest`、`assembleRelease -PtargetAbi=armeabi-v7a` 通过，release APK 已安装并在 Android TV 实机播放验证，日志返回 H.265/H.264 播放轨道且无 412 |
 
 ## P9 重构拆分收尾
 

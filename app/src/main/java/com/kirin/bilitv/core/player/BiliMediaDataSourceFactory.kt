@@ -13,6 +13,6 @@ class BiliMediaDataSourceFactory(
     .setUserAgent(BiliHeaders.UserAgent)
 
   fun create(): DataSource.Factory {
-    return factory.setDefaultRequestProperties(headers.asMap())
+    return factory.setDefaultRequestProperties(headers.asMediaMap())
   }
 }

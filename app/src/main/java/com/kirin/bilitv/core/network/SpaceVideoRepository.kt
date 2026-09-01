@@ -268,36 +268,6 @@ internal class SpaceVideoRepository(
     }
   }
 
-  private fun spaceHeaders(
-    mid: String,
-    sessData: String?,
-    biliJct: String?,
-    dedeUserId: Long?,
-    buvid3: String?,
-    buvid4: String?,
-  ): Map<String, String> {
-    return buildMap {
-      put("User-Agent", BiliHeaders.UserAgent)
-      put("Accept", "*/*")
-      put("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,zh-TW;q=0.6")
-      put("Origin", BiliHeaders.SpaceOrigin)
-      put("Referer", "https://space.bilibili.com/$mid")
-      put("Priority", "u=1, i")
-      put("sec-ch-ua", "\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"")
-      put("sec-ch-ua-mobile", "?0")
-      put("sec-ch-ua-platform", "\"Windows\"")
-      put("Sec-Fetch-Dest", "empty")
-      put("Sec-Fetch-Mode", "cors")
-      put("Sec-Fetch-Site", "same-site")
-      BiliHeaders.cookie(
-        sessData = sessData,
-        biliJct = biliJct,
-        buvid3 = buvid3,
-        buvid4 = buvid4,
-        dedeUserId = dedeUserId,
-      )?.let { cookie -> put("Cookie", cookie) }
-    }
-  }
 
   private fun Throwable.toSpaceVideoBrief(): String {
     return when (this) {
@@ -327,5 +297,35 @@ internal class SpaceVideoRepository(
     val SpaceRecoveryRetryDelaysMs = longArrayOf(1_200L, 2_400L)
     val SpaceRecoveryFallbackRetryDelaysMs = longArrayOf(1_200L)
     val SpaceRetryableHttpCodes = setOf(412, 429, 500, 502, 503, 504)
+  }
+}
+internal fun spaceHeaders(
+  mid: String,
+  sessData: String?,
+  biliJct: String?,
+  dedeUserId: Long?,
+  buvid3: String?,
+  buvid4: String?,
+): Map<String, String> {
+  return buildMap {
+    put("User-Agent", BiliHeaders.SpaceUserAgent)
+    put("Accept", "*/*")
+    put("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,zh-TW;q=0.6")
+    put("Origin", BiliHeaders.SpaceOrigin)
+    put("Referer", "https://space.bilibili.com/$mid")
+    put("Priority", "u=1, i")
+    put("sec-ch-ua", "\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"")
+    put("sec-ch-ua-mobile", "?0")
+    put("sec-ch-ua-platform", "\"Windows\"")
+    put("Sec-Fetch-Dest", "empty")
+    put("Sec-Fetch-Mode", "cors")
+    put("Sec-Fetch-Site", "same-site")
+    BiliHeaders.cookie(
+      sessData = sessData,
+      biliJct = biliJct,
+      buvid3 = buvid3,
+      buvid4 = buvid4,
+      dedeUserId = dedeUserId,
+    )?.let { cookie -> put("Cookie", cookie) }
   }
 }

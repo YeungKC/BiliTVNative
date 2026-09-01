@@ -3,6 +3,8 @@ package com.kirin.bilitv.core.network
 object BiliHeaders {
   const val UserAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+  const val ApiUserAgent = "BiliTVNative/1.0.1"
+  const val SpaceUserAgent = UserAgent
   const val Referer = "https://www.bilibili.com/"
   const val Origin = "https://www.bilibili.com"
   const val SpaceOrigin = "https://space.bilibili.com"
